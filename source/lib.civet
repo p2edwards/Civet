@@ -1993,6 +1993,19 @@ function quoteString(str) {
   }
 }
 
+// Add quotes for single-word (backslash) strings
+function quoteBackslashString(str) {
+  // Allow \\ as an alternate backslash literal
+  if (str === '\\') return "'\\\\'"
+  // Add js-compatible quotes around the string,
+  // preferring single quotes
+  if (str.includes("'") && !str.includes('"')) {
+    return `"${str.replace(/"/g, '\\"')}"`
+  } else {
+    return `'${str.replace(/'/g, "\\'")}'`
+  }
+}
+
 // Look for last property access like `.foo` or `[computed]` or root Identifier,
 // before any calls like `(args)`, non-null assertions `!`, and optionals `?`.
 // The return value should have a `name` property (for "Identifier" and
@@ -3920,6 +3933,7 @@ module.exports = {
   processReturnValue,
   processUnaryExpression,
   prune,
+  quoteBackslashString,
   quoteString,
   removeParentPointers,
   reorderBindingRestProperty,

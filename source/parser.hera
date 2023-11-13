@@ -41,6 +41,7 @@ const {
   processForInOf,
   processProgram,
   processUnaryExpression,
+  quoteBackslashString,
   quoteString,
   reorderBindingRestProperty,
   replaceNodes,
@@ -945,7 +946,7 @@ CallExpression
 CallExpressionRest
   MemberExpressionRest
   # perf: assertion to exit early
-  /(?=['"`])/ ( TemplateLiteral / StringLiteral ):literal ->
+  /(?=['"`\\])/ ( TemplateLiteral / StringLiteral ):literal ->
     if (literal.type === "StringLiteral") {
       return "`" + literal.token.slice(1, -1).replace(/(`|\$\{)/g, "\\$1") + "`"
     }
@@ -2128,7 +2129,7 @@ BlockStatementPart
 
 # https://262.ecma-international.org/#prod-Literal
 Literal
-  /(?=[0-9.'"tfyno])/ LiteralContent:literal ->
+  /(?=[0-9.'"tfyno\\])/ LiteralContent:literal ->
     return {
       type: "Literal",
       subtype: literal.type,
@@ -4748,6 +4749,13 @@ StringLiteral
       $loc,
     }
 
+  Backslash WordStringCharacters:str ->
+    return {
+      type: "StringLiteral",
+      token: `${quoteBackslashString(str.token)}`,
+      $loc,
+    }
+
 DoubleStringCharacters
   /(?:\\.|[^"])*/ ->
     return { $loc, token: $0 }
@@ -4762,6 +4770,11 @@ TripleDoubleStringCharacters
 
 TripleSingleStringCharacters
   /(?:'(?!'')|\\.|[^'])*/ ->
+    return { $loc, token: $0 }
+
+WordStringCharacters
+  # NOTE: Backslash word literals are terminated by ,;])} or whitespace
+  /(?:[^,;\]\)\}\s])+/ ->
     return { $loc, token: $0 }
 
 CoffeeStringSubstitution
@@ -5076,6 +5089,10 @@ Async
 Await
   "await" NonIdContinue ->
     return { $loc, token: $1, type: 'Await' }
+
+Backslash
+  "\\" ->
+    return { $loc, token: $1 }
 
 Backtick
   "`" ->

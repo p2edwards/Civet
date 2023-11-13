@@ -150,3 +150,64 @@ describe "strings", ->
     `${func(1,
       2)}`
   '''
+
+  testCase '''
+    backslash single-word strings
+    ---
+    support \\single-word-strings
+    // they start with a \\backslash
+    // they are terminated by ,;])} or whitespace
+    [a, b] := [\\comma, \\bracket]
+    {c} := {c:\\brace}
+    d := paren(\\thesis)
+    e := \\semi;
+    t = \\t
+    // they support escape codes
+    tab = \\\\t
+    newline = \\\\n
+    letter_n = \\n
+    backslash = \\\\\\
+    ---
+    support('single-word-strings')
+    // they start with a \\backslash
+    // they are terminated by ,;])} or whitespace
+    const [a, b] = ['comma', 'bracket']
+    const {c} = {c:'brace'}
+    const d = paren('thesis')
+    const e = 'semi';
+    t = 't'
+    // they support escape codes
+    tab = '\\t'
+    newline = '\\n'
+    letter_n = 'n'
+    backslash = '\\\\'
+  '''
+
+  testCase '''
+    backslash single-word strings with quotes
+    ---
+    normal = \\normal
+    apostrophe = \\'
+    contraction = \\it's
+    doubleQuotes = \\"hi!"
+    mixedQuotes = \\it's-a-"me"
+    ---
+    normal = 'normal'
+    apostrophe = "'"
+    contraction = "it's"
+    doubleQuotes = '"hi!"'
+    mixedQuotes = 'it\\'s-a-"me"'
+  '''
+
+  // LiveScript supports \\ or \\\ for a single backslash literal '\\'
+  testCase '''
+    single-word backslash compatiblity
+    ---
+    js_backslash = '\\\\'
+    backslash_backslash = \\\\\\
+    exceptional_backslash = \\\\
+    ---
+    js_backslash = '\\\\'
+    backslash_backslash = '\\\\'
+    exceptional_backslash = '\\\\'
+  '''
